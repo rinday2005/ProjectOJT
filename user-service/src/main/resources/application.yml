@@ -1,0 +1,48 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Đường dẫn gốc tới Realm trên Keycloak để Spring tự động tải public key về giải mã token
+          issuer-uri: http://localhost:8180/realms/homecare-realm
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  datasource:
+    url: jdbc:postgresql://localhost:5432/homecare_user_db
+    username: postgres
+    password: 12345
+    driver-class-name: org.postgresql.Driver
+
+  flyway:
+    baseline-on-migrate: true
+    schemas: public
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+keycloak:
+  admin:
+    server-url: http://localhost:8180
+    realm: master
+    username: admin
+    password: admin
+    client-id: admin-cli
+    realm-target: homecare-realm

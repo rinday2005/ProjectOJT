@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Silent check-sso redirect</title>
+</head>
+<body>
+    <script>
+        var parent = window.parent;
+        var event = new CustomEvent("oauth2-callback-event", { detail: window.location.href });
+        parent.dispatchEvent(event);
+    </script>
+</body>
+</html>

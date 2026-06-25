@@ -1,0 +1,32 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: payment-service
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/homecare-realm
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/homecare_payment_db
+    username: postgres
+    password: 12345
+    driver-class-name: org.postgresql.Driver
+
+  flyway:
+    baseline-on-migrate: true
+    schemas: public
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

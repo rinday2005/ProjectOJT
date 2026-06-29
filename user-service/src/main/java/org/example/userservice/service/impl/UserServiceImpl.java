@@ -12,6 +12,7 @@ import org.example.userservice.dto.response.RecentActivityResponse;
 import org.example.userservice.entity.User;
 import org.example.userservice.exception.DuplicatePhoneException;
 import org.example.userservice.exception.UserNotFoundException;
+import org.example.userservice.mapper.PatientMapper;
 import org.example.userservice.mapper.UserMapper;
 import org.example.userservice.repository.UserRepository;
 import org.example.userservice.repository.PatientRepository;
@@ -39,6 +40,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PatientRepository patientRepository;
     private final KeycloakService keycloakService;
+    private final PatientMapper patientMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -102,12 +104,11 @@ public class UserServiceImpl implements UserService {
             }
 
             String jsonBody = String.format(
-                "{\"username\":\"%s\",\"email\":\"%s\",\"firstName\":\"%s\",\"lastName\":\"%s\"}",
-                jwt.getClaimAsString("preferred_username"),
-                jwt.getClaimAsString("email"),
-                firstName.replace("\"", "\\\""),
-                lastName.replace("\"", "\\\"")
-            );
+                    "{\"username\":\"%s\",\"email\":\"%s\",\"firstName\":\"%s\",\"lastName\":\"%s\"}",
+                    jwt.getClaimAsString("preferred_username"),
+                    jwt.getClaimAsString("email"),
+                    firstName.replace("\"", "\\\""),
+                    lastName.replace("\"", "\\\""));
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -121,7 +122,8 @@ public class UserServiceImpl implements UserService {
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 log.info("Successfully updated profile in Keycloak for user: {}", jwt.getSubject());
             } else {
-                log.warn("Failed to update profile in Keycloak. Status: {}, Body: {}", response.statusCode(), response.body());
+                log.warn("Failed to update profile in Keycloak. Status: {}, Body: {}", response.statusCode(),
+                        response.body());
             }
         } catch (Exception e) {
             log.error("Error updating profile in Keycloak", e);
@@ -166,8 +168,7 @@ public class UserServiceImpl implements UserService {
                 userDto.password(),
                 userDto.fullName(),
                 userDto.phone(),
-                normalizedRole
-        );
+                normalizedRole);
 
         // 2. Insert into DB
         try {
@@ -199,7 +200,8 @@ public class UserServiceImpl implements UserService {
 
         // Validate unique phone
         if (userDto.phone() != null && !userDto.phone().trim().isEmpty()) {
-            boolean duplicatePhone = userRepository.existsByPhoneAndKeycloakIdNot(userDto.phone(), user.getKeycloakId());
+            boolean duplicatePhone = userRepository.existsByPhoneAndKeycloakIdNot(userDto.phone(),
+                    user.getKeycloakId());
             if (duplicatePhone) {
                 throw new DuplicatePhoneException("Số điện thoại đã được sử dụng!");
             }
@@ -237,8 +239,9 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Không tìm thấy người dùng với ID: " + id));
-        
-        // This triggers Hibernate Soft Delete as configured via @SQLDelete on User entity class
+
+        // This triggers Hibernate Soft Delete as configured via @SQLDelete on User
+        // entity class
         userRepository.delete(user);
         log.info("Soft-deleted user with ID: {}", id);
     }
@@ -248,18 +251,12 @@ public class UserServiceImpl implements UserService {
     public List<PatientDto> getPatientsByKeycloakId(String keycloakId) {
         User user = userRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new UserNotFoundException("Profile does not exist for Keycloak ID: " + keycloakId));
+        if (user.getPatients() == null) {
+            return List.of();
+        }
         return user.getPatients().stream()
-                .map(patient -> new PatientDto(
-                        patient.getId(),
-                        patient.getName(),
-                        patient.getDob(),
-                        patient.getGender(),
-                        patient.getMedicalHistory(),
-                        patient.getAddress(),
-                        patient.getLatitude(),
-                        patient.getLongitude()
-                ))
-                .collect(Collectors.toList());
+                .map(patient -> patientMapper.toDto(patient))
+                .toList();
     }
 
     @Override
@@ -289,7 +286,7 @@ public class UserServiceImpl implements UserService {
                 0L, // todaySchedules
                 0L, // completedToday
                 0.0, // monthlyRevenue
-                0L  // pendingPayments
+                0L // pendingPayments
         );
     }
 
@@ -301,8 +298,7 @@ public class UserServiceImpl implements UserService {
                 "System Initialized",
                 "Backend service user synchronization initialized successfully",
                 "completed",
-                java.time.LocalDateTime.now().minusHours(1).toString()
-        );
+                java.time.LocalDateTime.now().minusHours(1).toString());
         return List.of(activity);
     }
 }

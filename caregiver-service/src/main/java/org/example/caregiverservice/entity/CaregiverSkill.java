@@ -23,5 +23,6 @@ public class CaregiverSkill {
     private String skillName;
 
     @Column(nullable = false, length = 20)
-    private String level; // 'BASIC', 'ADVANCED'
+    @Builder.Default
+    private String level = "BASIC"; // 'BASIC', 'ADVANCED'
 }

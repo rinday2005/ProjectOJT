@@ -9,8 +9,12 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByKeycloakId(String keycloakId);
+
     Optional<User> findByEmail(String email);
+
     Optional<User> findByPhone(String phone);
+
     boolean existsByPhoneAndKeycloakIdNot(String phone, String keycloakId);
+
     long countByRole(String role);
 }

@@ -43,6 +43,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    if (error.config && (error.config as any).skipToast) {
+      return Promise.reject(error);
+    }
     const originalRequest = error.config as any; // Cast as any to attach dynamic _retry property
 
     // If receiving 401 (Unauthorized) from Gateway/Microservice and haven't retried yet

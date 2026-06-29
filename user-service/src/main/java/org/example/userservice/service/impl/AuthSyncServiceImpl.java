@@ -2,9 +2,9 @@ package org.example.userservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.userservice.service.AuthSyncService;
 import org.example.userservice.entity.User;
 import org.example.userservice.repository.UserRepository;
+import org.example.userservice.service.AuthSyncService;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +32,8 @@ public class AuthSyncServiceImpl implements AuthSyncService {
 
         log.info("Synchronizing user with Keycloak ID: {}", keycloakId);
 
-        // 2. Check if user already exists by email (created by Admin but not bound to Keycloak yet)
+        // 2. Check if user already exists by email (created by Admin but not bound to
+        // Keycloak yet)
         if (email != null) {
             var userByEmail = userRepository.findByEmail(email);
             if (userByEmail.isPresent()) {

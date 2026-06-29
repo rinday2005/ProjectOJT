@@ -12,7 +12,8 @@ import FamilyLayout from '../components/layouts/FamilyLayout';
 import Welcome from '../pages/family/welcome';
 import FamilyDashboard from '../pages/family/dashboard';
 import FamilyProfile from '../pages/family/familyProfile';
-import Patients from '../pages/family/patients';
+import PatientList from '../pages/family/PatientList';
+import PatientDetail from '../pages/family/PatientDetail';
 import Schedule from '../pages/family/schedule';
 import Services from '../pages/family/services';
 import Requests from '../pages/family/requests';
@@ -24,7 +25,17 @@ import AdminLayout from '../components/layouts/AdminLayout';
 import AdminDashboard from '../pages/admin/adminDashboard';
 import AdminProfile from '../pages/admin/adminProfile';
 import AdminUsers from '../pages/admin/user';
+import AdminPatients from '../pages/admin/Patients';
+import AdminCaregivers from '../pages/admin/Caregivers';
+import OperatorCaregivers from '../pages/operator/Caregivers';
+import KeycloakService from '../services/keycloak';
 import { XCircle } from 'lucide-react';
+
+const CaregiversRouteDispatcher: React.FC = () => {
+  const roles = KeycloakService.keycloak.tokenParsed?.realm_access?.roles || [];
+  const isAdmin = roles.some(r => r.toUpperCase() === 'ADMIN');
+  return isAdmin ? <AdminCaregivers /> : <OperatorCaregivers />;
+};
 
 export const AppRoutes: React.FC = () => {
   const { pathname } = useLocation();
@@ -42,7 +53,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/caregivers" element={<OurCaregivers />} />
         <Route path="/services" element={<Service />} />
-        
+
         {/* Main User Dashboard Route */}
         <Route
           path="/dashboard"
@@ -66,7 +77,8 @@ export const AppRoutes: React.FC = () => {
         <Route index element={<FamilyDashboard />} />
         <Route path="welcome" element={<Welcome />} />
         <Route path="profile" element={<FamilyProfile />} />
-        <Route path="patients" element={<Patients />} />
+        <Route path="patients" element={<PatientList />} />
+        <Route path="patients/detail/:id" element={<PatientDetail />} />
         <Route path="schedule" element={<Schedule />} />
         <Route path="services" element={<Services />} />
         <Route path="requests" element={<Requests />} />
@@ -88,8 +100,8 @@ export const AppRoutes: React.FC = () => {
         <Route index element={<AdminDashboard />} />
         <Route path="profile" element={<AdminProfile />} />
         <Route path="users" element={<AdminUsers />} />
-        <Route path="patients" element={<div className="p-8"><div className="bg-white p-8 rounded-[2rem] border border-stone-150"><h2>Patients Management (Admin View - Under Construction)</h2></div></div>} />
-        <Route path="caregivers" element={<div className="p-8"><div className="bg-white p-8 rounded-[2rem] border border-stone-150"><h2>Caregivers Management (Admin View - Under Construction)</h2></div></div>} />
+        <Route path="patients" element={<AdminPatients />} />
+        <Route path="caregivers" element={<CaregiversRouteDispatcher />} />
         <Route path="contracts" element={<div className="p-8"><div className="bg-white p-8 rounded-[2rem] border border-stone-150"><h2>Contracts Management (Admin View - Under Construction)</h2></div></div>} />
         <Route path="schedule" element={<div className="p-8"><div className="bg-white p-8 rounded-[2rem] border border-stone-150"><h2>Schedule Management (Admin View - Under Construction)</h2></div></div>} />
         <Route path="reports" element={<div className="p-8"><div className="bg-white p-8 rounded-[2rem] border border-stone-150"><h2>Reports & Analytics (Admin View - Under Construction)</h2></div></div>} />

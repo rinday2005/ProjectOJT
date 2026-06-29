@@ -33,5 +33,5 @@ public class Certificate {
     private LocalDate expiryDate;
 
     @Column(name = "file_id")
-    private Long fileId; // ID logic liên kết sang notification-service (file-service)
+    private Long fileId;
 }

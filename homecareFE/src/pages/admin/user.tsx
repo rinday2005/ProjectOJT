@@ -40,7 +40,7 @@ const Users = () => {
     const [activeDropdownId, setActiveDropdownId] = useState<number | null>(null);
     const [togglingUserId, setTogglingUserId] = useState<number | null>(null);
     const [dropdownCoords, setDropdownCoords] = useState<{ top: number; left: number } | null>(null);
-    
+
     // Add User Dialog State
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     // Delete User Dialog State
@@ -138,8 +138,8 @@ const Users = () => {
             (user.phone || "").includes(searchTerm);
 
         const matchesRole = roleFilter === "all" || (user.role || "").toLowerCase() === roleFilter.toLowerCase();
-        const matchesStatus = statusFilter === "all" || 
-            (statusFilter === "active" && user.isActive) || 
+        const matchesStatus = statusFilter === "all" ||
+            (statusFilter === "active" && user.isActive) ||
             (statusFilter === "blocked" && !user.isActive);
 
         return matchesSearch && matchesRole && matchesStatus;
@@ -161,7 +161,7 @@ const Users = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        
+
                         <div className="flex gap-2">
                             <Select value={roleFilter} onValueChange={setRoleFilter}>
                                 <SelectTrigger className="w-[140px] bg-white border-gray-200">
@@ -245,11 +245,11 @@ const Users = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
-                                                    <span 
+                                                    <span
                                                         className={cn(
                                                             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border",
-                                                            user.isActive 
-                                                                ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                                                            user.isActive
+                                                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                                                 : "bg-rose-50 text-rose-700 border-rose-200"
                                                         )}
                                                     >
@@ -261,81 +261,81 @@ const Users = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-right relative">
-                                                 <div className="flex justify-end">
-                                                     <Button 
-                                                         variant="ghost" 
-                                                         size="sm" 
-                                                         className="h-8 w-8 p-0 cursor-pointer hover:bg-stone-100 rounded-xl"
-                                                         onClick={(e) => {
-                                                             const rect = e.currentTarget.getBoundingClientRect();
-                                                             const spaceLeft = rect.left;
-                                                             if (spaceLeft > 220) {
-                                                                 // Open to the left of the button
-                                                                 setDropdownCoords({
-                                                                     top: rect.top - 8,
-                                                                     left: rect.left - 200
-                                                                 });
-                                                             } else {
-                                                                 // Open below the button
-                                                                 setDropdownCoords({
-                                                                     top: rect.bottom + 8,
-                                                                     left: Math.max(8, rect.right - 192)
-                                                                 });
-                                                             }
-                                                             setActiveDropdownId(activeDropdownId === user.id ? null : user.id);
-                                                         }}
-                                                     >
-                                                         <MoreVertical className="w-4 h-4 text-stone-500" />
-                                                     </Button>
-                                                     {activeDropdownId === user.id && dropdownCoords && createPortal(
-                                                         <>
-                                                             <div className="fixed inset-0 z-40" onClick={() => {
-                                                                 setActiveDropdownId(null);
-                                                                 setDropdownCoords(null);
-                                                             }} />
-                                                             <div 
-                                                                 className="fixed w-48 rounded-2xl bg-white border border-stone-150 shadow-xl z-50 py-1.5 animate-in fade-in duration-100"
-                                                                 style={{ 
-                                                                     top: `${dropdownCoords.top}px`, 
-                                                                     left: `${dropdownCoords.left}px` 
-                                                                 }}
-                                                             >
-                                                                 <button 
-                                                                     disabled={togglingUserId === user.id}
-                                                                     onClick={() => {
-                                                                         handleToggleStatus(user);
-                                                                         setActiveDropdownId(null);
-                                                                         setDropdownCoords(null);
-                                                                     }}
-                                                                     className={cn(
-                                                                         "w-full text-left px-4 py-2.5 text-sm font-semibold flex items-center gap-2 hover:bg-stone-55 transition-colors cursor-pointer disabled:opacity-50",
-                                                                         user.isActive ? "text-amber-600" : "text-emerald-600"
-                                                                     )}
-                                                                 >
-                                                                     {togglingUserId === user.id ? (
-                                                                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                                                     ) : user.isActive ? (
-                                                                         <Lock className="w-4 h-4" />
-                                                                     ) : (
-                                                                         <Unlock className="w-4 h-4" />
-                                                                     )}
-                                                                     {user.isActive ? "Block User" : "Unblock User"}
-                                                                 </button>
-                                                                 <button 
-                                                                     onClick={() => {
-                                                                         handleDeleteUser(user.id);
-                                                                         setActiveDropdownId(null);
-                                                                         setDropdownCoords(null);
-                                                                     }}
-                                                                     className="w-full text-left px-4 py-2.5 text-sm font-semibold flex items-center gap-2 hover:bg-stone-55 text-rose-600 transition-colors cursor-pointer"
-                                                                 >
-                                                                     <Trash2 className="w-4 h-4" />
-                                                                     Delete User
-                                                                 </button>
-                                                             </div>
-                                                         </>,
-                                                         document.body
-                                                     )}
+                                                <div className="flex justify-end">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 cursor-pointer hover:bg-stone-100 rounded-xl"
+                                                        onClick={(e) => {
+                                                            const rect = e.currentTarget.getBoundingClientRect();
+                                                            const spaceLeft = rect.left;
+                                                            if (spaceLeft > 220) {
+                                                                // Open to the left of the button
+                                                                setDropdownCoords({
+                                                                    top: rect.top - 8,
+                                                                    left: rect.left - 200
+                                                                });
+                                                            } else {
+                                                                // Open below the button
+                                                                setDropdownCoords({
+                                                                    top: rect.bottom + 8,
+                                                                    left: Math.max(8, rect.right - 192)
+                                                                });
+                                                            }
+                                                            setActiveDropdownId(activeDropdownId === user.id ? null : user.id);
+                                                        }}
+                                                    >
+                                                        <MoreVertical className="w-4 h-4 text-stone-500" />
+                                                    </Button>
+                                                    {activeDropdownId === user.id && dropdownCoords && createPortal(
+                                                        <>
+                                                            <div className="fixed inset-0 z-40" onClick={() => {
+                                                                setActiveDropdownId(null);
+                                                                setDropdownCoords(null);
+                                                            }} />
+                                                            <div
+                                                                className="fixed w-48 rounded-2xl bg-white border border-stone-150 shadow-xl z-50 py-1.5 animate-in fade-in duration-100"
+                                                                style={{
+                                                                    top: `${dropdownCoords.top}px`,
+                                                                    left: `${dropdownCoords.left}px`
+                                                                }}
+                                                            >
+                                                                <button
+                                                                    disabled={togglingUserId === user.id}
+                                                                    onClick={() => {
+                                                                        handleToggleStatus(user);
+                                                                        setActiveDropdownId(null);
+                                                                        setDropdownCoords(null);
+                                                                    }}
+                                                                    className={cn(
+                                                                        "w-full text-left px-4 py-2.5 text-sm font-semibold flex items-center gap-2 hover:bg-stone-55 transition-colors cursor-pointer disabled:opacity-50",
+                                                                        user.isActive ? "text-amber-600" : "text-emerald-600"
+                                                                    )}
+                                                                >
+                                                                    {togglingUserId === user.id ? (
+                                                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                                                    ) : user.isActive ? (
+                                                                        <Lock className="w-4 h-4" />
+                                                                    ) : (
+                                                                        <Unlock className="w-4 h-4" />
+                                                                    )}
+                                                                    {user.isActive ? "Block User" : "Unblock User"}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        handleDeleteUser(user.id);
+                                                                        setActiveDropdownId(null);
+                                                                        setDropdownCoords(null);
+                                                                    }}
+                                                                    className="w-full text-left px-4 py-2.5 text-sm font-semibold flex items-center gap-2 hover:bg-stone-55 text-rose-600 transition-colors cursor-pointer"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                    Delete User
+                                                                </button>
+                                                            </div>
+                                                        </>,
+                                                        document.body
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -402,8 +402,8 @@ const Users = () => {
                         </div>
                         <div className="grid gap-2">
                             <label className="text-xs font-bold text-stone-500 uppercase tracking-wider block">User Role</label>
-                            <Select 
-                                value={newUser.role} 
+                            <Select
+                                value={newUser.role}
                                 onValueChange={(value) => setNewUser({ ...newUser, role: value })}
                             >
                                 <SelectTrigger className="bg-stone-50 border-stone-200">
@@ -435,18 +435,18 @@ const Users = () => {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 mt-6 pt-4 border-t border-stone-100">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={() => {
                                 setIsDeleteDialogOpen(false);
                                 setUserToDeleteId(null);
-                            }} 
+                            }}
                             className="rounded-xl border border-stone-250 hover:bg-stone-55 cursor-pointer text-stone-600"
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            onClick={confirmDeleteUser} 
+                        <Button
+                            onClick={confirmDeleteUser}
                             className="bg-rose-600 hover:bg-rose-750 text-white rounded-xl cursor-pointer"
                         >
                             Delete User

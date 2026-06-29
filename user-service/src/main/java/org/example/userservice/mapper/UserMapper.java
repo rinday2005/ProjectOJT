@@ -1,7 +1,7 @@
 package org.example.userservice.mapper;
 
-import org.example.userservice.dto.request.UserProfileRequest;
 import org.example.userservice.dto.response.UserDto;
+import org.example.userservice.dto.request.UserProfileRequest;
 import org.example.userservice.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;

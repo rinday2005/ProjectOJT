@@ -5,7 +5,7 @@ import { mockStats, mockActivities } from '@/data/admin/dashboard';
 export const caregiverApi = {
   getAll: async () => {
     try {
-      const response = await api.get('/api/v1/caregiver');
+      const response = await api.get('/api/v1/caregiver', { skipToast: true } as any);
       return response.data;
     } catch (error) {
       console.warn("Failed to connect to caregiver-service. Falling back to mock data...", error);
@@ -21,7 +21,7 @@ export const authApi = {
       const roles = kc.tokenParsed?.realm_access?.roles || [];
       const isAdmin = roles.some(r => r.toUpperCase() === 'ADMIN');
       const isOpAdmin = roles.some(r => r.toUpperCase() === 'OPERATION_ADMIN' || r.toUpperCase() === 'OPERATOR');
-      
+
       return {
         email: kc.tokenParsed?.email || kc.tokenParsed?.preferred_username || '',
         name: kc.tokenParsed?.name || kc.tokenParsed?.preferred_username || '',
@@ -44,19 +44,31 @@ export const familyApi = {
   },
   getPatients: async () => {
     try {
-      const response = await api.get('/api/v1/users/profile/patients');
+      const response = await api.get('/api/v1/patients');
       return response.data;
     } catch (error) {
       console.warn("Patients endpoint not implemented. Returning empty list.", error);
       return [];
     }
+  },
+  createPatient: async (data: any) => {
+    const response = await api.post('/api/v1/patients', data);
+    return response.data;
+  },
+  updatePatient: async (id: number, data: any) => {
+    const response = await api.put(`/api/v1/patients/${id}`, data);
+    return response.data;
+  },
+  deletePatient: async (id: number) => {
+    const response = await api.delete(`/api/v1/patients/${id}`);
+    return response.data;
   }
 };
 
 export const adminApi = {
   getDashboardStats: async () => {
     try {
-      const response = await api.get('/api/v1/admin/stats');
+      const response = await api.get('/api/v1/admin/stats', { skipToast: true } as any);
       return response.data;
     } catch (error) {
       console.warn("Failed to fetch admin stats from backend. Falling back to 0 values...", error);
@@ -74,7 +86,7 @@ export const adminApi = {
   },
   getRecentActivities: async (limit: number) => {
     try {
-      const response = await api.get(`/api/v1/admin/activities?limit=${limit}`);
+      const response = await api.get(`/api/v1/admin/activities?limit=${limit}`, { skipToast: true } as any);
       return response.data;
     } catch (error) {
       console.warn("Failed to fetch admin activities from backend. Falling back to empty array...", error);
@@ -99,6 +111,77 @@ export const adminApi = {
   deleteUser: async (id: number) => {
     const response = await api.delete(`/api/v1/users/${id}`);
     return response.data;
+  },
+  getPatients: async (params?: any) => {
+    try {
+      const response = await api.get('/api/v1/patients', { params });
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch patients", error);
+      return [];
+    }
+  },
+  createPatient: async (data: any) => {
+    const response = await api.post('/api/v1/patients', data);
+    return response.data;
+  },
+  updatePatient: async (id: number, data: any) => {
+    const response = await api.put(`/api/v1/patients/${id}`, data);
+    return response.data;
+  },
+  deletePatient: async (id: number) => {
+    const response = await api.delete(`/api/v1/patients/${id}`);
+    return response.data;
+  },
+  getCaregivers: async () => {
+    const response = await api.get('/api/v1/caregiver');
+    return response.data;
+  },
+  createCaregiver: async (data: any) => {
+    const response = await api.post('/api/v1/caregiver', data);
+    return response.data;
+  },
+  updateCaregiver: async (id: number, data: any) => {
+    const response = await api.put(`/api/v1/caregiver/${id}`, data);
+    return response.data;
+  },
+  deleteCaregiver: async (id: number) => {
+    const response = await api.delete(`/api/v1/caregiver/${id}`);
+    return response.data;
+  },
+  verifyCertifications: async (id: number, verified: boolean) => {
+    const response = await api.post(`/api/v1/caregiver/${id}/verify-certifications?verified=${verified}`);
+    return response.data;
+  },
+  updateCaregiverSkillsAndAvailability: async (id: number, skills?: string, status?: string) => {
+    const response = await api.put(`/api/v1/caregiver/${id}/operator-update`, null, {
+      params: { skills, status }
+    });
+    return response.data;
+  }
+};
+
+export const scheduleApi = {
+  getByPatient: async (patientId: string | number) => {
+    try {
+      const response = await api.get(`/api/v1/schedules/patient/${patientId}`, { skipToast: true } as any);
+      return response.data;
+    } catch (error) {
+      console.warn("Failed to fetch schedules. Returning empty array.", error);
+      return [];
+    }
+  }
+};
+
+export const incidentApi = {
+  getByPatient: async (patientId: string | number) => {
+    try {
+      const response = await api.get(`/api/v1/incidents/patient/${patientId}`, { skipToast: true } as any);
+      return response.data;
+    } catch (error) {
+      console.warn("Failed to fetch incidents. Returning empty array.", error);
+      return [];
+    }
   }
 };
 

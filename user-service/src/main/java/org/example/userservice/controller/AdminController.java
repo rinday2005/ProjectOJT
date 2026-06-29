@@ -34,7 +34,8 @@ public class AdminController {
     }
 
     @GetMapping("/activities")
-    public ResponseEntity<List<RecentActivityResponse>> getRecentActivities(@RequestParam(defaultValue = "5") int limit) {
+    public ResponseEntity<List<RecentActivityResponse>> getRecentActivities(
+            @RequestParam(defaultValue = "5") int limit) {
         return ResponseEntity.ok(userService.getRecentActivities(limit));
     }
 }

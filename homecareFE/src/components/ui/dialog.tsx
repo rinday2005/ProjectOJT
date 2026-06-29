@@ -13,12 +13,12 @@ export const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children, cl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div 
-        className="fixed inset-0 cursor-pointer" 
-        onClick={() => onOpenChange(false)} 
+      <div
+        className="fixed inset-0 cursor-pointer"
+        onClick={() => onOpenChange(false)}
       />
-      <div className={`relative w-full ${className || 'max-w-3xl'} bg-white dark:bg-[#1a282b] rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-white/5 animate-scale-up z-10`}>
-        <button 
+      <div className={`relative w-full ${className || 'max-w-3xl'} bg-white dark:bg-[#1a282b] rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto border border-slate-100 dark:border-white/5 animate-scale-up z-10`}>
+        <button
           onClick={() => onOpenChange(false)}
           className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-all cursor-pointer z-50"
         >
@@ -48,6 +48,10 @@ export const DialogTitle: React.FC<any> = ({ children, className = '' }) => {
 
 export const DialogDescription: React.FC<any> = ({ children, className = '' }) => {
   return <p className={`text-sm text-slate-500 dark:text-slate-400 ${className}`}>{children}</p>;
+};
+
+export const DialogFooter: React.FC<any> = ({ children, className = '' }) => {
+  return <div className={className}>{children}</div>;
 };
 
 export default Dialog;

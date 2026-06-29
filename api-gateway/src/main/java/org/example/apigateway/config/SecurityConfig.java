@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -45,10 +46,15 @@ public class SecurityConfig {
                         .pathMatchers("/api/v1/users/public/**").permitAll()
                         .pathMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .pathMatchers("/api/v1/family/**").hasRole("FAMILY")
-                        .pathMatchers("/api/v1/caregiver/**").hasRole("CAREGIVER")
+                        .pathMatchers(HttpMethod.POST, "/api/v1/caregiver", "/api/v1/caregiver/**").hasRole("ADMIN")
+                        .pathMatchers(HttpMethod.DELETE, "/api/v1/caregiver", "/api/v1/caregiver/**").hasRole("ADMIN")
+                        .pathMatchers(HttpMethod.PUT, "/api/v1/caregiver/*/operator-update").hasRole("OPERATOR")
+                        .pathMatchers(HttpMethod.PUT, "/api/v1/caregiver", "/api/v1/caregiver/**").hasAnyRole("ADMIN", "OPERATOR")
+                        .pathMatchers(HttpMethod.GET, "/api/v1/caregiver", "/api/v1/caregiver/**").hasAnyRole("ADMIN", "OPERATOR", "CAREGIVER")
                         .pathMatchers("/api/v1/bookings/**", "/api/v1/schedules/**", "/api/v1/carelogs/**").hasAnyRole("FAMILY", "CAREGIVER", "ADMIN", "OPERATOR")
                         .pathMatchers("/api/v1/payments/**").hasAnyRole("FAMILY", "USER", "ADMIN")
                         .pathMatchers("/api/v1/users/profile/**", "/api/v1/users/profile").authenticated()
+                        .pathMatchers("/api/v1/patients/**").hasAnyRole("FAMILY", "OPERATOR", "ADMIN")
                         .pathMatchers("/api/v1/users/**", "/api/v1/residents/**").hasAnyRole("ADMIN", "OPERATOR")
                         .pathMatchers("/api/v1/notifications/**", "/api/v1/files/**").authenticated()
                         .anyExchange().authenticated()

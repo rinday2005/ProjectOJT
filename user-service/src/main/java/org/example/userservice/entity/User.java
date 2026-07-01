@@ -63,8 +63,9 @@ public class User {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        if (this.status == null) this.status = "ACTIVE";
-        if (this.version == null) this.version = 0L;
+        if (this.status == null)
+            this.status = "ACTIVE";
+        if (this.version == null)
+            this.version = 0L;
     }
 }
-

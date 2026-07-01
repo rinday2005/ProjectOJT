@@ -8,5 +8,6 @@ import java.util.List;
 @Repository
 public interface CaregiverSkillRepository extends JpaRepository<CaregiverSkill, Long> {
     List<CaregiverSkill> findByCaregiverId(Long caregiverId);
+
     void deleteByCaregiverId(Long caregiverId);
 }

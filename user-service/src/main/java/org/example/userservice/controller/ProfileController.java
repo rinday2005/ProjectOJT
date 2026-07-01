@@ -26,7 +26,21 @@ public class ProfileController {
         authSyncService.syncUser(jwt);
 
         UserDto profile = userService.getProfileByKeycloakId(jwt.getSubject());
+        if ("INACTIVE".equalsIgnoreCase(profile.status())) {
+            throw new org.example.userservice.exception.UserBlockedException("Tài khoản của bạn đã bị khóa.");
+        }
         return ResponseEntity.ok(profile);
+    }
+
+    @PostMapping("/appeal")
+    public ResponseEntity<org.example.userservice.dto.response.UserAppealDto> submitAppeal(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody java.util.Map<String, String> body) {
+        String message = body.get("message");
+        if (message == null || message.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nội dung khiếu nại không được để trống");
+        }
+        return ResponseEntity.ok(userService.submitAppeal(jwt.getSubject(), message));
     }
 
     @PutMapping

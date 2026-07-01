@@ -61,11 +61,23 @@ public class GlobalExceptionHandler {
 
     // Bắt lỗi Spring Security AccessDeniedException
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
-    public ResponseEntity<Map<String, Object>> handleSpringAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+    public ResponseEntity<Map<String, Object>> handleSpringAccessDenied(
+            org.springframework.security.access.AccessDeniedException ex) {
         Map<String, Object> error = new HashMap<>();
         error.put("timestamp", LocalDateTime.now());
         error.put("status", 403);
         error.put("error", "Forbidden");
+        error.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    // Bắt lỗi tài khoản bị khóa (Blocked User)
+    @ExceptionHandler(UserBlockedException.class)
+    public ResponseEntity<Map<String, Object>> handleUserBlocked(UserBlockedException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", 403);
+        error.put("error", "BLOCKED");
         error.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
@@ -99,12 +111,12 @@ public class GlobalExceptionHandler {
         error.put("timestamp", LocalDateTime.now());
         error.put("status", 400);
         error.put("error", "Bad Request");
-        
+
         String details = ex.getBindingResult().getFieldErrors().stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         error.put("message", "Invalid input data: " + details);
-        
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
@@ -119,4 +131,3 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }
-

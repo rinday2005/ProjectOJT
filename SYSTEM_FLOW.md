@@ -316,3 +316,85 @@ Dưới đây là tóm tắt những nhiệm vụ của Phase 5 - Patient Manage
 2.  **Xây dựng Giao diện & Tối ưu hóa ở Frontend**:
     *   Thiết lập luồng giao diện danh sách bệnh nhân [PatientList.tsx] và chi tiết bệnh nhân [PatientDetail.tsx]
     *   **Cơ chế lọc bỏ lỗi phiền hà (skipToast):** Triển khai cờ `skipToast: true` tại [api.ts] và [api.service.ts] cho các API phụ trợ/không bắt buộc để tắt hoàn toàn các popups thông báo lỗi khi các microservices ngoài (như booking-service hay incident) đang tạm thời tắt.
+
+---
+
+## 8. Tổng Kết Các Thay Đổi Của Phase 6 (Dynamic Caregiver Rating & Reviews)
+
+Dưới đây là tóm tắt các thay đổi đã hoàn thiện tại Phase 6 - Tự động tính toán Điểm Đánh giá Trung bình (Average Rating) cho Người Chăm Sóc trong `caregiver-service`:
+
+1.  **Thiết kế DTO & Repository Mới**:
+    *   Xây dựng DTO Record [ReviewStats.java](file:///d:/ProjectOJT/caregiver-service/src/main/java/org/example/caregiverservice/dto/response/ReviewStats.java) đóng vai trò lưu trữ thông tin thống kê điểm đánh giá (trung bình cộng và số lượng review) một cách type-safe, có cơ chế kiểm tra null-safety để gán mặc định `0.0` điểm và `0` đánh giá khi chưa có review.
+    *   Tạo mới interface [CaregiverReviewRepository.java](file:///d:/ProjectOJT/caregiver-service/src/main/java/org/example/caregiverservice/repository/CaregiverReviewRepository.java) chứa các câu truy vấn JPQL tối ưu:
+        *   `getAverageRatingAndCountForAllCaregivers()`: Gom nhóm (GROUP BY) theo caregiver để tính toán trung bình điểm và tổng số lượng review của tất cả người chăm sóc trong một truy vấn duy nhất, giải quyết triệt để bài toán **N+1 query** khi hiển thị danh sách.
+        *   `getAverageRatingAndCountByCaregiverId(id)`: Lấy thông tin thống kê đánh giá cho một người chăm sóc cụ thể.
+        *   Sử dụng hàm SQL `COALESCE` tại Database layer đảm bảo giá trị trung bình luôn trả về `0.0` thay vì `null` khi chưa có dữ liệu đánh giá.
+2.  **Tích hợp Logic Nghiệp Vụ tại Service Layer ([CaregiverServiceImpl.java](file:///d:/ProjectOJT/caregiver-service/src/main/java/org/example/caregiverservice/service/impl/CaregiverServiceImpl.java))**:
+    *   **Luồng lấy danh sách (`getCaregivers`)**: Truy vấn batch toàn bộ thống kê review, ánh xạ thành Map để tra cứu với độ phức tạp $O(1)$ và gán động điểm đánh giá trước khi chuyển đổi sang DTO trả về cho Client.
+    *   **Luồng chi tiết (`getCaregiverById`)**: Truy vấn động thống kê review của caregiver tương ứng và gán thông tin thực tế.
+    *   **Tính thứ hạng (`calculateCaregiverRanking`)**: Thay đổi từ việc lấy giá trị tĩnh sang tính toán điểm xếp hạng dựa trên điểm đánh giá thực tế cập nhật từ database.
+    *   **Tạo mới hồ sơ (`createCaregiver`)**: Thiết lập mặc định ban đầu là `0.0` điểm đánh giá và `0` lượt review thay vì giá trị gán cứng cũ là `5.0`.
+
+---
+
+## 9. Tích Hợp Gửi Mail Thật Qua Gmail SMTP & Cải Tiến Giao Diện Khiếu Nại (Real Email SMTP & Appeal UI Enhancements)
+
+Hệ thống đã triển khai luồng gửi email thật qua giao thức SMTP của Google (Gmail) để thông báo kết quả xử lý khiếu nại của Admin tới người dùng và nâng cấp trải nghiệm giao diện người dùng (UX) khi gửi khiếu nại.
+
+### A. Luồng Hoạt Động & Xử Lý Gửi Mail Thật (Real Email Flow)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as Quản trị viên (Admin)
+    participant FE as Admin Dashboard (React)
+    participant US as User Service (8081)
+    participant Async as Luồng phụ (Async Thread)
+    participant SMTP as Google Mail Server (smtp.gmail.com)
+    actor User as Người dùng bị khóa
+
+    Admin->>FE: Bấm "Phản hồi & Duyệt" khiếu nại của User
+    FE->>US: POST /api/v1/admin/appeals/{id}/reply (Gửi nội dung phản hồi)
+    US->>US: Cập nhật trạng thái khiếu nại sang "REPLIED", mở khóa tài khoản
+    Note over US: Khởi tạo Luồng Phụ (Async Thread) <br/>để gửi mail ngầm (không chặn luồng chính)
+    US-->>FE: Trả về HTTP 200 OK ngay lập tức (Để UI phản hồi nhanh)
+    
+    par Gửi mail chạy ngầm
+        US->>Async: Chuyển dữ liệu email, chủ đề, HTML template
+        Async->>SMTP: Kết nối SMTP (Port 587, STARTTLS) & Xác thực qua App Password
+        SMTP->>SMTP: Kiểm tra quyền & Ghi nhận thư gửi đi vào mục "Đã gửi"
+        SMTP-->>User: Gửi email HTML tới hộp thư thật của Người dùng
+        Async-->>US: Log thông báo gửi mail thành công / thất bại
+    end
+```
+
+### B. Các Thư Viện & Cấu Hợp Cấu Hình Được Thêm Mới (Dependencies & Configs)
+
+#### 1. Thư viện Back-end (Spring Boot Starter Mail)
+* **`spring-boot-starter-mail` (Maven dependency)**:
+  * *Nhiệm vụ*: Cung cấp thư viện gửi mail tích hợp sẵn của Spring Boot (`JavaMailSender`, `MimeMessageHelper`, `MimeMessage`).
+  * *Ứng dụng*: Dùng trong `UserServiceImpl` để xây dựng nội dung thư HTML và kết nối bảo mật tới SMTP server.
+* **Cấu hình SMTP trong [application.yml](file:///d:/ProjectOJT/user-service/src/main/resources/application.yml)**:
+  * Thiết lập kết nối SMTP qua host `smtp.gmail.com` cổng `587`.
+  * Bật xác thực bảo mật `mail.smtp.auth=true` và mã hóa luồng truyền tải `mail.smtp.starttls.enable=true`.
+  * Sử dụng **Mật khẩu ứng dụng (App Password)** 16 ký tự để vượt qua cơ chế xác minh 2 lớp (2-Step Verification) của Google.
+
+#### 2. Định dạng Thư HTML (HTML Email Template)
+* Thay vì gửi text thô dễ vào hòm thư Spam, hệ thống sử dụng `MimeMessage` và `MimeMessageHelper` để biên soạn email dưới dạng **HTML Template**:
+  * Sử dụng bảng màu xanh ngọc chủ đạo của HomeCare (`#5fa5ba`).
+  * Trình bày rõ ràng 2 khung nội dung: *Ý kiến khiếu nại của người dùng* (màu xám) và *Phản hồi xử lý của Ban quản trị* (màu xanh).
+  * Hiển thị biểu tượng check xanh cùng thông báo tài khoản đã được kích hoạt thành công.
+
+#### 3. Bộ Bảo Vệ Định Tuyến Bị Chặn (Gateway Blocked Protection)
+* Giao diện `/blocked` của người dùng được bọc trong `<ProtectedRoute>` tại [AppRoutes.tsx](file:///d:/ProjectOJT/homecareFE/src/routes/AppRoutes.tsx). Điều này ép buộc trình duyệt phải thông qua Keycloak redirection để lấy lại JWT token mới sau khi trang bị tải lại (giải quyết triệt để vấn đề trình duyệt chặn cookies bên thứ ba làm mất Token xác thực của API gửi khiếu nại).
+
+### C. Nâng Cấp Giao Diện Gửi Khiếu Nại (Appeal Preset Reasons)
+
+* Nhằm nâng cao trải nghiệm sử dụng (UX) của người dùng khi tài khoản bị khóa, giao diện [BlockedPage.tsx](file:///d:/ProjectOJT/homecareFE/src/pages/auth/BlockedPage.tsx) được tích hợp **Lý do mẫu (Preset Reasons)**:
+  * Tích hợp 3 nút bấm (chips) đại diện cho 3 kịch bản phổ biến:
+    1. *Khóa do nhầm lẫn* (💡)
+    2. *Cam kết tuân thủ chính sách* (🤝)
+    3. *Nghi ngờ tài khoản bị xâm nhập* (🔒)
+  * Khi người dùng click vào các chip này, mẫu văn bản chi tiết sẽ tự động được điền vào ô nhập lý do khiếu nại.
+  * Các chip có cơ chế toggle trạng thái để làm nổi bật lựa chọn hiện tại.
+

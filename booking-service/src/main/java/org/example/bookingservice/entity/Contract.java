@@ -36,6 +36,7 @@ public class Contract {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        if (this.status == null) this.status = "PENDING";
+        if (this.status == null)
+            this.status = "PENDING";
     }
 }

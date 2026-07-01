@@ -44,4 +44,27 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<UserDto> toggleUserStatus(
+            @PathVariable Long id,
+            @RequestParam boolean active) {
+        return ResponseEntity.ok(userService.toggleUserStatus(id, active));
+    }
+
+    @GetMapping("/appeals")
+    public ResponseEntity<List<org.example.userservice.dto.response.UserAppealDto>> getAllAppeals() {
+        return ResponseEntity.ok(userService.getAllAppeals());
+    }
+
+    @PostMapping("/appeals/{id}/reply")
+    public ResponseEntity<org.example.userservice.dto.response.UserAppealDto> replyToAppeal(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, String> body) {
+        String replyContent = body.get("replyContent");
+        if (replyContent == null || replyContent.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nội dung phản hồi không được để trống");
+        }
+        return ResponseEntity.ok(userService.replyToAppeal(id, replyContent));
+    }
 }

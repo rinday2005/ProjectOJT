@@ -83,6 +83,11 @@ api.interceptors.response.use(
 
     // Handle 403 (Forbidden access)
     if (error.response?.status === 403) {
+      const serverData = error.response?.data as any;
+      if (serverData?.error === 'BLOCKED') {
+        window.location.href = '/blocked';
+        return Promise.reject(error);
+      }
       console.error("You do not have permission to access this resource!");
       toast.error("Bạn không có quyền truy cập tài nguyên này!");
     } else {

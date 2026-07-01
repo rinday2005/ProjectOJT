@@ -44,8 +44,8 @@ export const FamilyLayout: React.FC = () => {
     { path: '/family/patients', label: 'Patients', icon: 'groups' },
     { path: '/family/schedule', label: 'Care Schedule', icon: 'calendar_today' },
     { path: '/family/services', label: 'Services', icon: 'medical_services' },
-    { path: '/family/requests', label: 'Requests', icon: 'list_alt' },
-    { path: '/family/contracts', label: 'Contracts', icon: 'description' },
+    { path: '/family/requests', label: 'Care Requests', icon: 'assignment' },
+    { path: '/family/contracts', label: 'Care Contracts', icon: 'history_edu' },
     { path: '/family/payments', label: 'Payments', icon: 'payments' },
     { path: '/family/health-report', label: 'Health Report', icon: 'monitor_heart' },
     { path: '/family/feedback', label: 'Feedback', icon: 'star' }

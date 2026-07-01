@@ -1,6 +1,5 @@
 package org.example.bookingservice.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -50,7 +49,9 @@ public class Schedule {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        if (this.status == null) this.status = "SCHEDULED";
-        if (this.version == null) this.version = 0L;
+        if (this.status == null)
+            this.status = "SCHEDULED";
+        if (this.version == null)
+            this.version = 0L;
     }
 }

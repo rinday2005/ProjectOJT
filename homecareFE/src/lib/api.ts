@@ -185,5 +185,85 @@ export const incidentApi = {
   }
 };
 
+export const serviceApi = {
+  getAll: async () => {
+    try {
+      const response = await api.get('/api/v1/bookings/services');
+      return response.data;
+    } catch (error) {
+      console.warn("Failed to fetch services", error);
+      return [];
+    }
+  }
+};
+
+export const careRequestApi = {
+  getMy: async () => {
+    const response = await api.get('/api/v1/bookings/care-requests/my');
+    return response.data;
+  },
+  getAll: async () => {
+    const response = await api.get('/api/v1/bookings/care-requests');
+    return response.data;
+  },
+  getById: async (id: string | number) => {
+    const response = await api.get(`/api/v1/bookings/care-requests/${id}`);
+    return response.data;
+  },
+  create: async (data: any) => {
+    const response = await api.post('/api/v1/bookings/care-requests', data);
+    return response.data;
+  },
+  updateStatus: async (id: string | number, status: string) => {
+    const response = await api.put(`/api/v1/bookings/care-requests/${id}/status?status=${status}`);
+    return response.data;
+  },
+  assignCaregiver: async (id: string | number, caregiverId: string | number) => {
+    const response = await api.put(`/api/v1/bookings/care-requests/${id}/assign?caregiverId=${caregiverId}`);
+    return response.data;
+  },
+  checkAvailability: async (caregiverId: string | number, date: string, startTime: string, endTime: string) => {
+    const response = await api.get(`/api/v1/bookings/caregivers/${caregiverId}/availability`, {
+      params: { date, startTime, endTime }
+    });
+    return response.data;
+  }
+};
+
+export const contractApi = {
+  getMy: async () => {
+    const response = await api.get('/api/v1/bookings/contracts/my');
+    return response.data;
+  },
+  getAll: async () => {
+    const response = await api.get('/api/v1/bookings/contracts');
+    return response.data;
+  },
+  sign: async (id: string | number) => {
+    const response = await api.put(`/api/v1/bookings/contracts/${id}/sign`);
+    return response.data;
+  },
+  approve: async (id: string | number) => {
+    const response = await api.put(`/api/v1/bookings/contracts/${id}/approve`);
+    return response.data;
+  }
+};
+
+export const appealApi = {
+  submit: async (message: string) => {
+    const response = await api.post('/api/v1/users/profile/appeal', { message });
+    return response.data;
+  },
+  getAll: async () => {
+    const response = await api.get('/api/v1/users/appeals');
+    return response.data;
+  },
+  reply: async (id: number | string, replyContent: string) => {
+    const response = await api.post(`/api/v1/users/appeals/${id}/reply`, { replyContent });
+    return response.data;
+  }
+};
+
 export default caregiverApi;
+
 

@@ -9,7 +9,9 @@ import org.example.caregiverservice.dto.response.CaregiverDto;
 import org.example.caregiverservice.entity.Caregiver;
 import org.example.caregiverservice.entity.CaregiverSkill;
 import org.example.caregiverservice.entity.Certificate;
+import org.example.caregiverservice.dto.response.ReviewStats;
 import org.example.caregiverservice.repository.CaregiverRepository;
+import org.example.caregiverservice.repository.CaregiverReviewRepository;
 import org.example.caregiverservice.repository.CaregiverSkillRepository;
 import org.example.caregiverservice.repository.CertificateRepository;
 import org.example.caregiverservice.service.CaregiverService;
@@ -29,6 +31,7 @@ public class CaregiverServiceImpl implements CaregiverService {
     private final CaregiverSkillRepository caregiverSkillRepository;
     private final CertificateRepository certificateRepository;
     private final UserServiceClient userServiceClient;
+    private final CaregiverReviewRepository caregiverReviewRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -42,6 +45,10 @@ public class CaregiverServiceImpl implements CaregiverService {
         Map<Long, Caregiver> localMap = localCaregivers.stream()
                 .collect(Collectors.toMap(Caregiver::getUserId, c -> c, (c1, c2) -> c1));
 
+        List<ReviewStats> statsList = caregiverReviewRepository.getAverageRatingAndCountForAllCaregivers();
+        Map<Long, ReviewStats> statsMap = statsList.stream()
+                .collect(Collectors.toMap(ReviewStats::caregiverId, s -> s));
+
         return users.stream()
                 .map(u -> {
                     Caregiver cg = localMap.get(u.id());
@@ -53,9 +60,18 @@ public class CaregiverServiceImpl implements CaregiverService {
                                 .specialization("General Care")
                                 .experienceYears(0)
                                 .hourlyRate(java.math.BigDecimal.ZERO)
-                                .averageRating(5.0)
+                                .averageRating(0.0)
                                 .totalReviews(0)
                                 .build();
+                    } else {
+                        ReviewStats stats = statsMap.get(cg.getId());
+                        if (stats != null) {
+                            cg.setAverageRating(stats.averageRating());
+                            cg.setTotalReviews(stats.reviewCount().intValue());
+                        } else {
+                            cg.setAverageRating(0.0);
+                            cg.setTotalReviews(0);
+                        }
                     }
                     return convertToDto(cg, u);
                 })
@@ -72,6 +88,12 @@ public class CaregiverServiceImpl implements CaregiverService {
         if (u == null) {
             throw new IllegalArgumentException("Không tìm thấy thông tin tài khoản người dùng tương ứng!");
         }
+
+        ReviewStats stats = caregiverReviewRepository.getAverageRatingAndCountByCaregiverId(id)
+                .orElse(new ReviewStats(id, 0.0, 0L));
+        cg.setAverageRating(stats.averageRating());
+        cg.setTotalReviews(stats.reviewCount().intValue());
+
         return convertToDto(cg, u);
     }
 
@@ -89,8 +111,7 @@ public class CaregiverServiceImpl implements CaregiverService {
                 "ACTIVE",
                 "",
                 request.imageUrl(),
-                request.password()
-        );
+                request.password());
 
         UserDto createdUser = userServiceClient.createUser(creationDto);
 
@@ -101,12 +122,14 @@ public class CaregiverServiceImpl implements CaregiverService {
                     .userId(createdUser.id())
                     .specialization(request.specialization())
                     .experienceYears(request.experienceYears() != null ? request.experienceYears() : 0)
-                    .hourlyRate(request.hourlyRate() != null ? java.math.BigDecimal.valueOf(request.hourlyRate()) : java.math.BigDecimal.ZERO)
+                    .hourlyRate(request.hourlyRate() != null ? java.math.BigDecimal.valueOf(request.hourlyRate())
+                            : java.math.BigDecimal.ZERO)
                     .bio(request.bio())
                     .status(request.status() != null ? request.status() : defaultStatus)
-                    .averageRating(5.0)
+                    .averageRating(0.0)
                     .totalReviews(0)
-                    .certificationsVerified(request.certificationsVerified() != null ? request.certificationsVerified() : false)
+                    .certificationsVerified(
+                            request.certificationsVerified() != null ? request.certificationsVerified() : false)
                     .build();
 
             Caregiver savedCg = caregiverRepository.save(cg);
@@ -152,15 +175,18 @@ public class CaregiverServiceImpl implements CaregiverService {
                 u.status(),
                 u.address(),
                 request.imageUrl() != null ? request.imageUrl() : u.avatar(),
-                null
-        );
+                null);
         UserDto updatedUser = userServiceClient.updateUser(u.id(), updateDto);
 
         // Update local caregiver properties
-        if (request.specialization() != null) cg.setSpecialization(request.specialization());
-        if (request.experienceYears() != null) cg.setExperienceYears(request.experienceYears());
-        if (request.hourlyRate() != null) cg.setHourlyRate(java.math.BigDecimal.valueOf(request.hourlyRate()));
-        if (request.bio() != null) cg.setBio(request.bio());
+        if (request.specialization() != null)
+            cg.setSpecialization(request.specialization());
+        if (request.experienceYears() != null)
+            cg.setExperienceYears(request.experienceYears());
+        if (request.hourlyRate() != null)
+            cg.setHourlyRate(java.math.BigDecimal.valueOf(request.hourlyRate()));
+        if (request.bio() != null)
+            cg.setBio(request.bio());
 
         if (request.isAvailable() != null) {
             cg.setStatus(request.isAvailable() ? "Online" : "Offline");
@@ -233,7 +259,10 @@ public class CaregiverServiceImpl implements CaregiverService {
         Caregiver cg = caregiverRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người chăm sóc với ID: " + id));
 
-        double ratingScore = cg.getAverageRating() * 20.0;
+        ReviewStats stats = caregiverReviewRepository.getAverageRatingAndCountByCaregiverId(id)
+                .orElse(new ReviewStats(id, 0.0, 0L));
+
+        double ratingScore = stats.averageRating() * 20.0;
         double experienceScore = cg.getExperienceYears() * 2.0;
 
         return ratingScore + experienceScore;

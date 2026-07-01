@@ -7,7 +7,7 @@ import KeycloakService from '../../services/keycloak';
 export const DashboardPage: React.FC = () => {
   const kc = KeycloakService.keycloak;
   const roles = kc.tokenParsed?.realm_access?.roles || [];
-  
+
   if (roles.includes('FAMILY') || roles.includes('family')) {
     return <Navigate to="/family/welcome" replace />;
   }

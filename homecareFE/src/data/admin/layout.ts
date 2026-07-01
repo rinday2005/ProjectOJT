@@ -7,7 +7,8 @@ import {
   BarChart3, 
   Settings, 
   HelpCircle,
-  User
+  User,
+  MessageSquare
 } from "lucide-react";
 
 export interface SidebarItem {
@@ -22,7 +23,8 @@ export const menuItems: SidebarItem[] = [
   { path: "/admin/users", label: "Users", icon: User },
   { path: "/admin/patients", label: "Patients", icon: Users },
   { path: "/admin/caregivers", label: "Caregivers", icon: UserCheck },
-  { path: "/admin/contracts", label: "Contracts", icon: FileText },
+  { path: "/admin/requests", label: "Requests & Contracts", icon: FileText },
+  { path: "/admin/appeals", label: "Appeals", icon: MessageSquare },
   { path: "/admin/schedule", label: "Schedule", icon: Calendar },
   { path: "/admin/reports", label: "Reports", icon: BarChart3 }
 ];

@@ -18,7 +18,12 @@ import Schedule from '../pages/family/schedule';
 import Services from '../pages/family/services';
 import Requests from '../pages/family/requests';
 import Contracts from '../pages/family/contracts';
+import RequestDetail from '../pages/family/RequestDetail';
+import CreateRequest from '../pages/family/CreateRequest';
+import CreateContract from '../pages/family/CreateContract';
+import FamilyPaymentPage from '../pages/family/FamilyPaymentPage';
 import Payments from '../pages/family/payments';
+import AdminRequestsContracts from '../pages/admin/RequestsContracts';
 import HealthReport from '../pages/family/healthReport';
 import Feedback from '../pages/family/feedback';
 import AdminLayout from '../components/layouts/AdminLayout';
@@ -30,6 +35,8 @@ import AdminCaregivers from '../pages/admin/Caregivers';
 import OperatorCaregivers from '../pages/operator/Caregivers';
 import KeycloakService from '../services/keycloak';
 import { XCircle } from 'lucide-react';
+import BlockedPage from '../pages/auth/BlockedPage';
+import AdminAppeals from '../pages/admin/AdminAppeals';
 
 const CaregiversRouteDispatcher: React.FC = () => {
   const roles = KeycloakService.keycloak.tokenParsed?.realm_access?.roles || [];
@@ -65,6 +72,16 @@ export const AppRoutes: React.FC = () => {
         />
       </Route>
 
+      {/* Standalone Blocked Page */}
+      <Route
+        path="/blocked"
+        element={
+          <ProtectedRoute>
+            <BlockedPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 2. Family Layout (Custom Sidebar & Topbar, no default footer) */}
       <Route
         path="/family"
@@ -83,6 +100,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="services" element={<Services />} />
         <Route path="requests" element={<Requests />} />
         <Route path="contracts" element={<Contracts />} />
+        <Route path="requests/new" element={<CreateRequest />} />
+        <Route path="requests/create" element={<CreateRequest />} />
+        <Route path="contracts/create" element={<CreateContract />} />
+        <Route path="requests/:id" element={<RequestDetail />} />
+        <Route path="payment/:id" element={<FamilyPaymentPage />} />
         <Route path="payments" element={<Payments />} />
         <Route path="health-report" element={<HealthReport />} />
         <Route path="feedback" element={<Feedback />} />
@@ -102,7 +124,8 @@ export const AppRoutes: React.FC = () => {
         <Route path="users" element={<AdminUsers />} />
         <Route path="patients" element={<AdminPatients />} />
         <Route path="caregivers" element={<CaregiversRouteDispatcher />} />
-        <Route path="contracts" element={<div className="p-8"><div className="bg-white p-8 rounded-[2rem] border border-stone-150"><h2>Contracts Management (Admin View - Under Construction)</h2></div></div>} />
+        <Route path="requests" element={<AdminRequestsContracts />} />
+        <Route path="appeals" element={<AdminAppeals />} />
         <Route path="schedule" element={<div className="p-8"><div className="bg-white p-8 rounded-[2rem] border border-stone-150"><h2>Schedule Management (Admin View - Under Construction)</h2></div></div>} />
         <Route path="reports" element={<div className="p-8"><div className="bg-white p-8 rounded-[2rem] border border-stone-150"><h2>Reports & Analytics (Admin View - Under Construction)</h2></div></div>} />
         <Route path="settings" element={<div className="p-8"><div className="bg-white p-8 rounded-[2rem] border border-stone-150"><h2>Settings (Admin View - Under Construction)</h2></div></div>} />
